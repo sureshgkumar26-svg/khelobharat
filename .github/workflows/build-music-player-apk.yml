@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build:
@@ -38,10 +38,25 @@ jobs:
         working-directory: music-player
         run: gradle --no-daemon assembleDebug
 
+      - name: Prepare direct-download APK
+        run: cp music-player/app/build/outputs/apk/debug/app-debug.apk Luma-Music.apk
+
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: Luma-Music-debug-APK
-          path: music-player/app/build/outputs/apk/debug/app-debug.apk
+          path: Luma-Music.apk
           if-no-files-found: error
           retention-days: 14
+
+      - name: Publish latest APK release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: luma-latest
+          name: Luma Music Player - Latest APK
+          body: |
+            Latest automatically built Luma Music Player debug APK.
+            This is a debug build, not a Play Store-signed release.
+          files: Luma-Music.apk
+          overwrite_files: true
+          make_latest: true
